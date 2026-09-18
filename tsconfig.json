@@ -1,6 +1,6 @@
 {
   "compilerOptions": {
-    "module": "preserve",
+    "module": "ESNext",
     "moduleResolution": "bundler",
     "resolvePackageJsonExports": true,
     "esModuleInterop": true,
@@ -14,7 +14,9 @@
     "baseUrl": ".",
     "ignoreDeprecations": "6.0",
     "paths": {
-      "@/*": ["src/*"]
+      "@/*": [
+        "src/*"
+      ]
     },
     "sourceMap": true,
     "outDir": "./dist",
@@ -22,7 +24,10 @@
     "skipLibCheck": true,
     "strict": true,
     "strictPropertyInitialization": false,
-    "types": ["vitest/globals", "node"],
+    "types": [
+      "vitest/globals",
+      "node"
+    ],
     "resolveJsonModule": true
   }
 }
