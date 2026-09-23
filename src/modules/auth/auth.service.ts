@@ -102,9 +102,11 @@ export class AuthService {
     userId: string,
     refreshToken: string,
   ): Promise<void> {
+    const hashedRefreshToken = await hash(refreshToken, this.SALT_ROUNDS);
+
     await this.prisma.user.update({
       where: { id: userId },
-      data: { refreshToken },
+      data: { refreshToken: hashedRefreshToken },
     });
   }
 
