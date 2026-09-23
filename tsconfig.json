@@ -11,13 +11,7 @@
     "experimentalDecorators": true,
     "allowSyntheticDefaultImports": true,
     "target": "ES2023",
-    "baseUrl": ".",
     "ignoreDeprecations": "6.0",
-    "paths": {
-      "@/*": [
-        "src/*"
-      ]
-    },
     "sourceMap": true,
     "outDir": "./dist",
     "incremental": true,
