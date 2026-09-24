@@ -6,13 +6,13 @@ import {
   Post,
   UseGuards,
 } from '@nestjs/common';
-import { AuthService } from './auth.service.js';
-import { RegisterDto } from './dto/register.dto.js';
-import { AuthResponseDto } from './dto/authResponse.dto.js';
-import { RefreshTokenGuard } from './guards/refreshToken.guards.js';
-import { GetUser } from '../../common/decorators/getUser.decorator.js';
-import { JwtAuthGuard } from '../../common/guards/jwtAuth.guard.js';
-import { LoginDto } from './dto/login.dto.js';
+import { AuthService } from './auth.service';
+import { RegisterDto } from './dto/register.dto';
+import { AuthResponseDto } from './dto/authResponse.dto';
+import { RefreshTokenGuard } from './guards/refreshToken.guards';
+import { GetUser } from '../../common/decorators/getUser.decorator';
+import { JwtAuthGuard } from '../../common/guards/jwtAuth.guard';
+import { LoginDto } from './dto/login.dto';
 import { ApiBearerAuth, ApiOperation, ApiResponse } from '@nestjs/swagger';
 
 @Controller('auth')
