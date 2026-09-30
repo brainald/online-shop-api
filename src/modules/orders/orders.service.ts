@@ -18,6 +18,7 @@ import {
   OrderResponseDto,
 } from '../dto/orderResponse.dto';
 import { QueryOrderDto } from '../dto/queryOrder.dto';
+import { UpdateOrderDto } from '../dto/updateOrder.dto';
 
 @Injectable()
 export class OrdersService {
@@ -186,15 +187,175 @@ export class OrdersService {
     };
   }
 
+  async findAll(
+    userId: string,
+    query: QueryOrderDto,
+  ): Promise<{
+    data: OrderResponseDto[];
+    total: number;
+    page: number;
+    limit: number;
+  }> {
+    const { limit = 10, page = 1, search, status } = query;
+    const skip = (page - 1) * limit;
+    const where: Prisma.OrderWhereInput = { userId };
+
+    if (status) where.status = status;
+
+    if (search) {
+      where.OR = [
+        { id: { contains: search, mode: 'insensitive' } },
+        { orderNumber: { contains: search, mode: 'insensitive' } },
+      ];
+    }
+
+    const getTotal = this.prisma.order.count({ where });
+
+    const getOrders = this.prisma.order.findMany({
+      where,
+      skip,
+      take: limit,
+      orderBy: { createdAt: 'desc' },
+      include: {
+        orderItems: {
+          include: {
+            product: true,
+          },
+        },
+        user: true,
+      },
+    });
+    const [orders, total] = await Promise.all([getOrders, getTotal]);
+
+    return {
+      data: orders.map((o) => this.map(o)),
+      limit,
+      page,
+      total,
+    };
+  }
+
+  async findOne(
+    id: string,
+    userId?: string,
+  ): Promise<OrderApiResponseDto<OrderResponseDto>> {
+    const where: Prisma.OrderWhereInput = { id };
+    if (userId) where.userId = userId;
+
+    const order = await this.prisma.order.findFirst({
+      where,
+      include: {
+        orderItems: {
+          include: {
+            product: true,
+          },
+        },
+        user: true,
+      },
+    });
+
+    if (!order) {
+      throw new NotFoundException(`Order with ID ${id} not found`);
+    }
+
+    return this.wrap(order);
+  }
+
+  async update(
+    id: string,
+    updateOrderDto: UpdateOrderDto,
+    userId?: string,
+  ): Promise<OrderApiResponseDto<OrderResponseDto>> {
+    const where: Prisma.OrderWhereInput = { id };
+    if (userId) where.userId = userId;
+    const existing = await this.prisma.order.findFirst({
+      where,
+    });
+
+    if (!existing) {
+      throw new NotFoundException(`Order ${id} not found`);
+    }
+
+    const updated = await this.prisma.order.update({
+      where: { id },
+      data: { ...updateOrderDto },
+      include: {
+        user: true,
+        orderItems: {
+          include: {
+            product: true,
+          },
+        },
+      },
+    });
+
+    return this.wrap(updated);
+  }
+
+  async cancel(
+    id: string,
+    userId?: string,
+  ): Promise<OrderApiResponseDto<OrderResponseDto>> {
+    const where: Prisma.OrderWhereInput = { id };
+    if (userId) where.userId = userId;
+
+    const order = await this.prisma.order.findFirst({
+      where,
+      include: {
+        orderItems: {
+          include: {
+            product: true,
+          },
+        },
+        user: true,
+      },
+    });
+
+    if (!order) {
+      throw new NotFoundException(`Order ${id} not found`);
+    }
+
+    if (order.status !== OrderStatus.PENDING) {
+      throw new BadRequestException('Only pending orders can be cancelled');
+    }
+
+    const cancelled = await this.prisma.$transaction(async (tx) => {
+      await Promise.all(
+        order.orderItems.map((item) =>
+          tx.product.updateMany({
+            where: { id: item.productId },
+            data: { stock: { increment: item.quantity } },
+          }),
+        ),
+      );
+
+      return tx.order.update({
+        where: { id },
+        data: { status: OrderStatus.CANCELLED },
+        include: {
+          orderItems: {
+            include: {
+              product: true,
+            },
+          },
+          user: true,
+        },
+      });
+    });
+
+    return this.wrap(cancelled, 'Order cancelled successfully');
+  }
+
   private wrap(
     order: Order & {
       orderItems: (OrderItem & { product: Product })[];
       user: User;
     },
+    message = 'Order retrieved successfully',
   ): OrderApiResponseDto<OrderResponseDto> {
     return {
       success: true,
-      message: 'Order retrieved successfully',
+      message,
       data: this.map(order),
     };
   }

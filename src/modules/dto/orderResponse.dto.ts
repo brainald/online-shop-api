@@ -73,3 +73,19 @@ export class OrderResponseDto {
   @ApiProperty()
   updatedAt: Date;
 }
+
+export class PaginatedOrderResponseDto {
+  @ApiProperty({
+    type: [OrderResponseDto],
+  })
+  data: OrderResponseDto[];
+
+  @ApiProperty()
+  total: number;
+
+  @ApiProperty()
+  page: number;
+
+  @ApiProperty()
+  limit: number;
+}
