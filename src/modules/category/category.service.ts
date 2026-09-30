@@ -99,9 +99,9 @@ export class CategoryService {
       ];
     }
 
-    const total = await this.prisma.category.count({ where });
+    const getTotal = this.prisma.category.count({ where });
 
-    const categories = await this.prisma.category.findMany({
+    const getCategories = this.prisma.category.findMany({
       where,
       skip: (page - 1) * limit,
       take: limit,
@@ -112,6 +112,8 @@ export class CategoryService {
         },
       },
     });
+
+    const [categories, total] = await Promise.all([getCategories, getTotal]);
 
     return {
       data: categories.map((category) =>

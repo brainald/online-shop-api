@@ -18,6 +18,7 @@ import {
   ApiOperation,
   ApiResponse,
   ApiTags,
+  getSchemaPath,
 } from '@nestjs/swagger';
 import { Role } from '@prisma/client';
 import { Roles } from 'src/common/decorators/roles.decorator';
@@ -74,7 +75,7 @@ export class ProductsController {
       properties: {
         data: {
           type: 'array',
-          items: { $ref: '#/components/schemas/ProductResponseDto' },
+          items: { $ref: getSchemaPath(ProductResponseDto) },
         },
 
         meta: {

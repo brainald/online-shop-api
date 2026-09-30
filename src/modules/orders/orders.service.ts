@@ -17,6 +17,7 @@ import {
   OrderApiResponseDto,
   OrderResponseDto,
 } from '../dto/orderResponse.dto';
+import { QueryOrderDto } from '../dto/queryOrder.dto';
 
 @Injectable()
 export class OrdersService {
@@ -80,32 +81,36 @@ export class OrdersService {
     });
 
     const order = await this.prisma.$transaction(async (tx) => {
-      for (const item of orderItems) {
-        const result = await tx.product.updateMany({
-          where: {
-            id: item.productId,
-            stock: { gte: item.quantity },
-            isActive: true,
-          },
-          data: { stock: { decrement: item.quantity } },
+      const results = await Promise.all(
+        orderItems.map((item) =>
+          tx.product.updateMany({
+            where: {
+              id: item.productId,
+              stock: { gte: item.quantity },
+              isActive: true,
+            },
+            data: { stock: { decrement: item.quantity } },
+          }),
+        ),
+      );
+
+      const failedItemIndex = results.findIndex((result) => result.count === 0);
+      if (failedItemIndex !== -1) {
+        const item = orderItems[failedItemIndex];
+        const product = await tx.product.findUnique({
+          where: { id: item.productId },
+          select: { name: true, stock: true },
         });
 
-        if (result.count === 0) {
-          const product = await tx.product.findUnique({
-            where: { id: item.productId },
-            select: { name: true, stock: true },
-          });
-
-          if (!product) {
-            throw new NotFoundException(
-              `Product with ID ${item.productId} not found`,
-            );
-          }
-
-          throw new BadRequestException(
-            `Insufficient stock for product ${product.name}. Available: ${product.stock}, requested: ${item.quantity}`,
+        if (!product) {
+          throw new NotFoundException(
+            `Product with ID ${item.productId} not found`,
           );
         }
+
+        throw new BadRequestException(
+          `Insufficient stock for product ${product.name}. Available: ${product.stock}, requested: ${item.quantity}`,
+        );
       }
 
       const newOrder = await tx.order.create({
@@ -135,6 +140,50 @@ export class OrdersService {
       return newOrder;
     });
     return this.wrap(order);
+  }
+
+  async findAllForAdmin(query: QueryOrderDto): Promise<{
+    data: OrderResponseDto[];
+    total: number;
+    page: number;
+    limit: number;
+  }> {
+    const { page = 1, limit = 10, status, search } = query;
+    const skip = (page - 1) * limit;
+
+    const where: Prisma.OrderWhereInput = {};
+    if (status) where.status = status;
+    if (search)
+      where.OR = [
+        { id: { contains: search, mode: 'insensitive' } },
+        { orderNumber: { contains: search, mode: 'insensitive' } },
+      ];
+
+    const getOrders = this.prisma.order.findMany({
+      where,
+      skip,
+      take: limit,
+      include: {
+        orderItems: {
+          include: {
+            product: true,
+          },
+        },
+        user: true,
+      },
+      orderBy: { createdAt: 'desc' },
+    });
+
+    const getTotal = this.prisma.order.count({ where });
+
+    const [orders, total] = await Promise.all([getOrders, getTotal]);
+
+    return {
+      data: orders.map((o) => this.map(o)),
+      total,
+      page,
+      limit,
+    };
   }
 
   private wrap(

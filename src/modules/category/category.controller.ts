@@ -18,6 +18,7 @@ import {
   ApiQuery,
   ApiResponse,
   ApiTags,
+  getSchemaPath,
 } from '@nestjs/swagger';
 import { Role } from '@prisma/client';
 import { Roles } from 'src/common/decorators/roles.decorator';
@@ -95,7 +96,7 @@ export class CategoryController {
       properties: {
         data: {
           type: 'array',
-          items: { $ref: '#/components/schemas/CategoryResponseDto' },
+          items: { $ref: getSchemaPath(CategoryResponseDto) },
         },
         meta: {
           type: 'object',
