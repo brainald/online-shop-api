@@ -18,6 +18,14 @@ export class ProductsService {
   async create(
     createProductDto: CreateProductDto,
   ): Promise<ProductResponseDto> {
+    const category = await this.prisma.category.findUnique({
+      where: { id: createProductDto.categoryId },
+    });
+
+    if (!category) {
+      throw new NotFoundException('Category not found');
+    }
+
     const existingSku = await this.prisma.product.findUnique({
       where: { sku: createProductDto.sku },
     });

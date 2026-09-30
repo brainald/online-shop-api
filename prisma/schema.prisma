@@ -133,10 +133,10 @@ model OrderItem {
 }
 
 model Order {
-  id           String      @id @default(uuid())
-  orderNumber  String      @unique @default(cuid())
-  status       OrderStatus
-  totalAmounts Decimal     @db.Decimal(10, 2)
+  id          String      @id @default(uuid())
+  orderNumber String      @unique @default(cuid())
+  status      OrderStatus
+  totalAmount Decimal     @db.Decimal(10, 2)
 
   userId String
   user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
