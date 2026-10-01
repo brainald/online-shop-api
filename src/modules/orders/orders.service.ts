@@ -12,13 +12,10 @@ import {
   User,
 } from '@prisma/client';
 import { PrismaService } from 'src/prisma/prisma.service';
-import { CreateOrderDto } from '../dto/createOrder.dto';
-import {
-  OrderApiResponseDto,
-  OrderResponseDto,
-} from '../dto/orderResponse.dto';
-import { QueryOrderDto } from '../dto/queryOrder.dto';
-import { UpdateOrderDto } from '../dto/updateOrder.dto';
+import { CreateOrderDto } from './dto/createOrder.dto';
+import { OrderApiResponseDto, OrderResponseDto } from './dto/orderResponse.dto';
+import { QueryOrderDto } from './dto/queryOrder.dto';
+import { UpdateOrderDto } from './dto/updateOrder.dto';
 
 @Injectable()
 export class OrdersService {

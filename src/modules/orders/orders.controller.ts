@@ -33,16 +33,16 @@ import {
   ModerateThrottle,
   RelaxedThrottle,
 } from 'src/common/decorators/custom-throttler.decorator';
-import { CreateOrderDto } from '../dto/createOrder.dto';
+import { CreateOrderDto } from './dto/createOrder.dto';
 import {
   OrderApiResponseDto,
   OrderResponseDto,
   PaginatedOrderResponseDto,
-} from '../dto/orderResponse.dto';
+} from './dto/orderResponse.dto';
 import { Roles } from 'src/common/decorators/roles.decorator';
 import { Role } from '@prisma/client';
-import { QueryOrderDto } from '../dto/queryOrder.dto';
-import { UpdateOrderDto } from '../dto/updateOrder.dto';
+import { QueryOrderDto } from './dto/queryOrder.dto';
+import { UpdateOrderDto } from './dto/updateOrder.dto';
 
 @ApiTags('orders')
 @ApiBearerAuth('JWT-auth')
