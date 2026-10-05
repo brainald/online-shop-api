@@ -30,7 +30,7 @@ import { CategoryResponseDto } from './dto/categoryResponse.dto';
 import { QueryCategoryDto } from './dto/queryCategory.dto';
 import { UpdateCategoryDto } from './dto/updateCategory.dto';
 
-@ApiTags('Categories')
+@ApiTags('categories')
 @Controller('categories')
 export class CategoryController {
   constructor(private readonly categoryService: CategoryService) {}

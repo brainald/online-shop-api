@@ -13,8 +13,14 @@ import { RefreshTokenGuard } from './guards/refreshToken.guards';
 import { GetUser } from '../../common/decorators/getUser.decorator';
 import { JwtAuthGuard } from '../../common/guards/jwtAuth.guard';
 import { LoginDto } from './dto/login.dto';
-import { ApiBearerAuth, ApiOperation, ApiResponse } from '@nestjs/swagger';
+import {
+  ApiBearerAuth,
+  ApiOperation,
+  ApiResponse,
+  ApiTags,
+} from '@nestjs/swagger';
 
+@ApiTags('auth')
 @Controller('auth')
 export class AuthController {
   constructor(private readonly authService: AuthService) {}
